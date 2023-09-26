@@ -2,7 +2,7 @@ const asyncHandler = require("express-async-handler");
 
 // Display homepage index of number of items and categories
 exports.index = asyncHandler(async (req, res, next) => {
-  res.send("INDEX PAGE WITH INVENTORY LIST");
+  res.render("index", { title: "Lakeview Tents Inventory" });
 });
 
 // GET request for create item form
