@@ -3,6 +3,7 @@ const router = express.Router();
 
 const item_controller = require("../controllers/itemController");
 const category_controller = require("../controllers/categoryController");
+const brand_controller = require("../controllers/brandController");
 
 // ITEM ROUTES
 
@@ -58,5 +59,31 @@ router.get("/category/:id", category_controller.categoryDetail);
 
 // GET list of all categories.
 router.get("/categories", category_controller.categoryList);
+
+// BRAND ROUTES
+
+// GET create brand form.
+router.get("/brand/create", brand_controller.createBrandForm);
+
+// POST create brand form.
+router.post("/brand/create", brand_controller.sendCreateBrandForm);
+
+// GET delete brand form.
+router.get("/brand/:id/delete", brand_controller.deleteBrandForm);
+
+// POST delete brand form.
+router.post("/brand/:id/delete", brand_controller.sendDeleteBrandForm);
+
+// GET update brand form.
+router.get("/brand/:id/update", brand_controller.updateBrandForm);
+
+// POST update brand form.
+router.post("/brand/:id/update", brand_controller.sendUpdateBrandForm);
+
+// GET individual brand.
+router.get("/brand/:id", brand_controller.brandDetail);
+
+// GET list of all brands.
+router.get("/brands", brand_controller.brandList);
 
 module.exports = router;
