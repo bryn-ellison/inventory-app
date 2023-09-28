@@ -1,0 +1,16 @@
+extends layout
+
+block content
+    h1= title
+    p= description
+    p Number in stock: #{stock}
+    p Maker: 
+        a(href=brand.url) #{brand.name}    
+    p This product is in the following categories: 
+    ul
+    each category in categories
+        li 
+            a(href=category.url) #{category.name}
+
+    else
+        li This product is not associated with any categories.

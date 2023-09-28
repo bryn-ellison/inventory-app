@@ -1,0 +1,13 @@
+extends layout
+
+block content
+  h1= title
+  hr 
+  p These are the products we have listed for the #{title} category: 
+  ul
+    each tent in tent_list
+        li 
+          a(href=tent.url) #{tent.name}
+
+    else
+      li There are no items in the #{title} category.

@@ -3,3 +3,10 @@ extends layout
 block content
   h1= title
   p Welcome to #{title}
+
+  p The inventory system has the current record counts: 
+
+    ul
+    li <strong>Tents:</strong> !{tent_count}
+    li <strong>Categories:</strong> !{category_count}
+    li <strong>Brands:</strong> !{brand_count}

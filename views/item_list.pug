@@ -1,0 +1,16 @@
+extends layout
+
+block content
+  h1= title
+  br  
+  ul
+    each tent in tent_list
+      li
+        a(href=tent.url) #{tent.name}
+        |  (#{tent.brand.name})
+        br
+        p Number in stock: #{tent.stock}
+
+    else
+      li There are no tents.
+

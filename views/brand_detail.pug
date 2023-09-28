@@ -1,0 +1,14 @@
+extends layout
+
+block content
+  h1= title
+  p #{description}
+    hr
+    p These are the products we have listed for #{title}: 
+    ul
+    each tent in tent_list
+        li 
+            a(href=tent.url) #{tent.name}
+
+    else
+        li There are no items in the system by this brand.
