@@ -3,15 +3,46 @@ const asyncHandler = require("express-async-handler");
 const Brand = require("../models/brand");
 const Item = require("../models/item");
 
+const { body, validationResult } = require("express-validator");
+
 // GET request for create Brand form
 exports.createBrandForm = asyncHandler(async (req, res, next) => {
-  res.send("CREATE Brand FORM GET REQ");
+  res.render("brand_create_form", { title: "Create brand" });
 });
 
 // POST request for create Brand form
-exports.sendCreateBrandForm = asyncHandler(async (req, res, next) => {
-  es.send("CREATE Brand FORM POST REQ");
-});
+exports.sendCreateBrandForm = [
+  body("brand_name")
+    .trim()
+    .isLength({ min: 1 })
+    .escape()
+    .withMessage("Brand name must be specified."),
+  body("brand_desc")
+    .trim()
+    .isLength({ min: 1 })
+    .escape()
+    .withMessage("Brand description must be specified"),
+
+  asyncHandler(async (req, res, next) => {
+    const errors = validationResult(req);
+
+    const brand = new Brand({
+      name: req.body.brand_name,
+      desc: req.body.brand_desc,
+    });
+
+    if (!errors.isEmpty()) {
+      res.render("brand_create_form", {
+        title: "Create brand",
+        brand: brand,
+      });
+      return;
+    } else {
+      await brand.save();
+      res.redirect(brand.url);
+    }
+  }),
+];
 
 // GET request for delete Brand form
 exports.deleteBrandForm = asyncHandler(async (req, res, next) => {

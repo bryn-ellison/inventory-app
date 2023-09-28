@@ -1,16 +1,41 @@
 const asyncHandler = require("express-async-handler");
+
 const Category = require("../models/category");
 const Item = require("../models/item");
 
+const { body, validationResult } = require("express-validator");
+
 // GET request for create category form
 exports.createCategoryForm = asyncHandler(async (req, res, next) => {
-  res.send("CREATE category FORM GET REQ");
+  res.render("category_create_form", { title: "Create category" });
 });
 
 // POST request for create category form
-exports.sendCreateCategoryForm = asyncHandler(async (req, res, next) => {
-  es.send("CREATE category FORM POST REQ");
-});
+exports.sendCreateCategoryForm = [
+  body("category_name")
+    .trim()
+    .isLength({ min: 1 })
+    .escape()
+    .withMessage("Category name must be specified."),
+  asyncHandler(async (req, res, next) => {
+    const errors = validationResult(req);
+
+    const category = new Category({
+      name: req.body.category_name,
+    });
+
+    if (!errors.isEmpty()) {
+      res.render("category_create_form", {
+        title: "Create category",
+        category: category,
+      });
+      return;
+    } else {
+      await category.save();
+      res.redirect(category.url);
+    }
+  }),
+];
 
 // GET request for delete category form
 exports.deleteCategoryForm = asyncHandler(async (req, res, next) => {

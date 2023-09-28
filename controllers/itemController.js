@@ -4,6 +4,8 @@ const Item = require("../models/item");
 const Brand = require("../models/brand");
 const Category = require("../models/category");
 
+const { body, validationResult } = require("express-validator");
+
 // Display homepage index of number of items and categories
 exports.index = asyncHandler(async (req, res, next) => {
   const [numItems, numCategories, numBrands] = await Promise.all([
@@ -21,13 +23,79 @@ exports.index = asyncHandler(async (req, res, next) => {
 
 // GET request for create item form
 exports.createForm = asyncHandler(async (req, res, next) => {
-  res.send("CREATE ITEM FORM GET REQ");
+  const [allBrands, allCategories] = await Promise.all([
+    Brand.find().exec(),
+    Category.find().exec(),
+  ]);
+
+  res.render("item_create_form", {
+    title: "Create Item",
+    brands: allBrands,
+    categories: allCategories,
+  });
 });
 
 // POST request for create item form
-exports.sendCreateForm = asyncHandler(async (req, res, next) => {
-  res.send("CREATE ITEM FORM POST REQ");
-});
+exports.sendCreateForm = [
+  (req, res, next) => {
+    if (!(req.body.catgeory instanceof Array)) {
+      if (typeof req.body.catgegory === "undefined") req.body.category = [];
+      else req.body.category = new Array(req.body.category);
+    }
+    next();
+  },
+
+  body("item_name", "Name must not be empty.")
+    .trim()
+    .isLength({ min: 1 })
+    .escape(),
+  body("item_desc", "Description must not be empty.")
+    .trim()
+    .isLength({ min: 1 })
+    .escape(),
+  body("stock", "Stock must not be empty.")
+    .trim()
+    .isLength({ min: 1 })
+    .escape()
+    .withMessage("Stock must be number")
+    .isNumeric(),
+
+  asyncHandler(async (req, res, next) => {
+    const errors = validationResult(req);
+
+    const item = new Item({
+      name: req.body.item_name,
+      desc: req.body.item_desc,
+      stock: req.body.stock,
+      brand: req.body.brand,
+      category: req.body.category,
+    });
+
+    if (!errors.isEmpty()) {
+      const [allBrands, allCategories] = await Promise.all([
+        Brand.find().exec(),
+        Category.find().exec(),
+      ]);
+
+      for (const category of allCategories) {
+        if (item.category.includes(category._id)) {
+          category.checked = "true";
+        }
+      }
+
+      res.render("item_create_form", {
+        title: "Create Item",
+        brands: allBrands,
+        categories: allCategories,
+        item: item,
+        errors: errors.array(),
+      });
+    } else {
+      await item.save();
+      res.redirect(item.url);
+    }
+  }),
+];
 
 // GET request for delete item form
 exports.deleteForm = asyncHandler(async (req, res, next) => {
