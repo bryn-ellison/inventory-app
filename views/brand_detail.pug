@@ -2,7 +2,7 @@ extends layout
 
 block content
   h1= title
-  p #{description}
+  p= brand.desc
     hr
     p These are the products we have listed for #{title}: 
     ul
@@ -12,3 +12,6 @@ block content
 
     else
         li There are no items in the system by this brand.
+  hr
+  p 
+    a(href=brand.url+'/delete') Delete brand

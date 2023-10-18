@@ -46,12 +46,39 @@ exports.sendCreateBrandForm = [
 
 // GET request for delete Brand form
 exports.deleteBrandForm = asyncHandler(async (req, res, next) => {
-  res.send("DELETE Brand FORM GET REQ");
+  const [brand, allItemsByBrand] = await Promise.all([
+    Brand.findById(req.params.id).exec(),
+    Item.find({ brand: req.params.id }, "name"),
+  ]);
+  if (brand === null) {
+    res.redirect("/inventory/brands");
+  }
+
+  res.render("brand_delete", {
+    title: "Delete Brand",
+    brand: brand,
+    brand_items: allItemsByBrand,
+  });
 });
 
 // POST request for delete Brand form
 exports.sendDeleteBrandForm = asyncHandler(async (req, res, next) => {
-  res.send("DELETE Brand FORM POST REQ");
+  const [brand, allItemsByBrand] = await Promise.all([
+    Brand.findById(req.params.id).exec(),
+    Item.find({ brand: req.params.id }, "name"),
+  ]);
+
+  if (allItemsByBrand.length > 0) {
+    res.render("brand_delete", {
+      title: "Delete Brand",
+      brand: brand,
+      brand_items: allItemsByBrand,
+    });
+    return;
+  } else {
+    await Brand.findByIdAndRemove(req.body.brandid);
+    res.redirect("/inventory/brands");
+  }
 });
 
 // GET request for update Brand form
@@ -79,7 +106,7 @@ exports.brandDetail = asyncHandler(async (req, res, next) => {
 
   res.render("brand_detail", {
     title: brandData.name,
-    description: brandData.desc,
+    brand: brandData,
     tent_list: itemsByBrand,
   });
 });

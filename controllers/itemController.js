@@ -38,8 +38,8 @@ exports.createForm = asyncHandler(async (req, res, next) => {
 // POST request for create item form
 exports.sendCreateForm = [
   (req, res, next) => {
-    if (!(req.body.catgeory instanceof Array)) {
-      if (typeof req.body.catgegory === "undefined") req.body.category = [];
+    if (!(req.body.category instanceof Array)) {
+      if (typeof req.body.category === "undefined") req.body.category = [];
       else req.body.category = new Array(req.body.category);
     }
     next();
@@ -59,6 +59,9 @@ exports.sendCreateForm = [
     .escape()
     .withMessage("Stock must be number")
     .isNumeric(),
+  body("category", "There must be at least one category selected.")
+    .isArray({ min: 1 })
+    .escape(),
 
   asyncHandler(async (req, res, next) => {
     const errors = validationResult(req);
@@ -99,12 +102,17 @@ exports.sendCreateForm = [
 
 // GET request for delete item form
 exports.deleteForm = asyncHandler(async (req, res, next) => {
-  res.send("DELETE ITEM FORM GET REQ");
+  const itemData = await Item.findById(req.params.id);
+  res.render("item_delete", {
+    title: "Delete Item",
+    item: itemData,
+  });
 });
 
 // POST request for delete item form
 exports.sendDeleteForm = asyncHandler(async (req, res, next) => {
-  res.send("DELETE ITEM FORM POST REQ");
+  await Item.findByIdAndRemove(req.body.itemid);
+  res.redirect("/inventory/items");
 });
 
 // GET request for update item form
@@ -136,6 +144,7 @@ exports.itemDetail = asyncHandler(async (req, res, next) => {
     categories: itemData.category,
     stock: itemData.stock,
     brand: itemData.brand,
+    item_url: itemData.url,
   });
 });
 
