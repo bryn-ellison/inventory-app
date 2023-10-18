@@ -49,12 +49,11 @@ exports.deleteCategoryForm = asyncHandler(async (req, res, next) => {
   }
   // create list of items in category that only have one category
   for (checkedCategory of allItemsByCategory) {
-    console.log(checkedCategory.category.length);
     if (checkedCategory.category.length === 1) {
       itemsWithOnecategory.push(checkedCategory);
     }
   }
-
+  console.log(itemsWithOnecategory);
   res.render("category_delete", {
     title: "Delete category:",
     category: category,
@@ -72,7 +71,6 @@ exports.sendDeleteCategoryForm = asyncHandler(async (req, res, next) => {
   // create list of items in category that only have one category
   const itemsWithOnecategory = [];
   for (checkedCategory of allItemsByCategory) {
-    console.log(checkedCategory.category.length);
     if (checkedCategory.category.length === 1) {
       itemsWithOnecategory.push(checkedCategory);
     }
@@ -93,13 +91,45 @@ exports.sendDeleteCategoryForm = asyncHandler(async (req, res, next) => {
 
 // GET request for update category form
 exports.updateCategoryForm = asyncHandler(async (req, res, next) => {
-  res.send("UPDATE category FORM GET REQ");
+  const category = await Category.findById(req.params.id).exec();
+  res.render("category_create_form", {
+    title: "Update category",
+    category: category,
+  });
 });
 
 // POST request for update category form
-exports.sendUpdateCategoryForm = asyncHandler(async (req, res, next) => {
-  res.send("UPDATE category FORM POST REQ");
-});
+exports.sendUpdateCategoryForm = [
+  body("category_name")
+    .trim()
+    .isLength({ min: 1 })
+    .escape()
+    .withMessage("Category name must be specified."),
+
+  asyncHandler(async (req, res, next) => {
+    const errors = validationResult(req);
+
+    const category = new Category({
+      name: req.body.category_name,
+      _id: req.params.id,
+    });
+
+    if (!errors.isEmpty()) {
+      res.render("category_create_form", {
+        title: "Update category",
+        category: category,
+      });
+      return;
+    } else {
+      const updatedCategory = await Category.findByIdAndUpdate(
+        req.params.id,
+        category,
+        {}
+      );
+      res.redirect(updatedCategory.url);
+    }
+  }),
+];
 
 // Display category detail
 exports.categoryDetail = asyncHandler(async (req, res, next) => {

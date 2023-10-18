@@ -4,13 +4,13 @@ block content
     h1 #{title} #{category.name}
 
     if category_items.length
-        p #[strong The following items have only this category associated, please add a different category to each item before deleting this category:]
+      p #[strong The following items have only this category associated, please add a different category to each item before deleting this category:]
 
-        dl
+      dl
         each item in category_items
-            dt
-                a(href=item.url) #{item.name}
-            dd #{item.desc}  
+          dt
+            a(href=item.url) #{item.name}
+          dd #{item.desc}  
 
     else 
       p Do you really want to delete this category?

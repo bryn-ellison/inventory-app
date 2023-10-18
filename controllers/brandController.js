@@ -83,13 +83,48 @@ exports.sendDeleteBrandForm = asyncHandler(async (req, res, next) => {
 
 // GET request for update Brand form
 exports.updateBrandForm = asyncHandler(async (req, res, next) => {
-  res.send("UPDATE Brand FORM GET REQ");
+  const brand = await Brand.findById(req.params.id).exec();
+  res.render("brand_create_form", { title: "Update brand", brand: brand });
 });
 
 // POST request for update Brand form
-exports.sendUpdateBrandForm = asyncHandler(async (req, res, next) => {
-  res.send("UPDATE Brand FORM POST REQ");
-});
+exports.sendUpdateBrandForm = [
+  body("brand_name")
+    .trim()
+    .isLength({ min: 1 })
+    .escape()
+    .withMessage("Brand name must be specified."),
+  body("brand_desc")
+    .trim()
+    .isLength({ min: 1 })
+    .escape()
+    .withMessage("Brand description must be specified"),
+
+  asyncHandler(async (req, res, next) => {
+    const errors = validationResult(req);
+
+    const brand = new Brand({
+      name: req.body.brand_name,
+      desc: req.body.brand_desc,
+      _id: req.params.id,
+    });
+
+    if (!errors.isEmpty()) {
+      res.render("brand_create_form", {
+        title: "Update brand",
+        brand: brand,
+      });
+      return;
+    } else {
+      const updatedBrand = await Brand.findByIdAndUpdate(
+        req.params.id,
+        brand,
+        {}
+      );
+      res.redirect(updatedBrand.url);
+    }
+  }),
+];
 
 // Display Brand detail
 exports.brandDetail = asyncHandler(async (req, res, next) => {

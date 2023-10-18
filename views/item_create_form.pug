@@ -11,7 +11,7 @@ block content
             label(for='item_desc') Item description: 
             input#item_desc.form-control(type='text' placeholder='Item description' name='item_desc' required='true' value=(undefined===item ? '' : item.desc))
         div.form-group
-            label(for='stock') Item name: 
+            label(for='stock') Number in stock: 
             input#stock.form-control(type='number' placeholder='Number of items in stock' name='stock' required='true' value=(undefined===item ? '' : item.stock))
         div.form-group
             label(for='brand') Brand:

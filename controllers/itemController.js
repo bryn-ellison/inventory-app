@@ -117,13 +117,101 @@ exports.sendDeleteForm = asyncHandler(async (req, res, next) => {
 
 // GET request for update item form
 exports.updateForm = asyncHandler(async (req, res, next) => {
-  res.send("UPDATE ITEM FORM GET REQ");
+  const [item, allBrands, allCategories] = await Promise.all([
+    Item.findById(req.params.id).populate("brand").populate("category").exec(),
+    Brand.find().exec(),
+    Category.find().exec(),
+  ]);
+  // if no results
+  if (item === null) {
+    const err = new Error("Item not found");
+    err.status = 404;
+    return next(err);
+  }
+
+  // mark selected categories as checked
+  for (const category of allCategories) {
+    for (const item_category of item.category) {
+      if (category._id.toString() === item_category._id.toString()) {
+        category.checked = "true";
+      }
+    }
+  }
+
+  res.render("item_create_form", {
+    title: "Update item",
+    item: item,
+    brands: allBrands,
+    categories: allCategories,
+  });
 });
 
 // POST request for update item form
-exports.sendUpdateForm = asyncHandler(async (req, res, next) => {
-  res.send("UPDATE ITEM FORM POST REQ");
-});
+exports.sendUpdateForm = [
+  (req, res, next) => {
+    if (!(req.body.category instanceof Array)) {
+      if (typeof req.body.category === "undefined") req.body.category = [];
+      else req.body.category = new Array(req.body.category);
+    }
+    next();
+  },
+
+  body("item_name", "Name must not be empty.")
+    .trim()
+    .isLength({ min: 1 })
+    .escape(),
+  body("item_desc", "Description must not be empty.")
+    .trim()
+    .isLength({ min: 1 })
+    .escape(),
+  body("stock", "Stock must not be empty.")
+    .trim()
+    .isLength({ min: 1 })
+    .escape()
+    .withMessage("Stock must be number")
+    .isNumeric(),
+  body("category", "There must be at least one category selected.")
+    .isArray({ min: 1 })
+    .escape(),
+
+  asyncHandler(async (req, res, next) => {
+    const errors = validationResult(req);
+
+    const item = new Item({
+      name: req.body.item_name,
+      desc: req.body.item_desc,
+      stock: req.body.stock,
+      brand: req.body.brand,
+      category: req.body.category,
+      _id: req.params.id,
+    });
+
+    if (!errors.isEmpty()) {
+      const [allBrands, allCategories] = await Promise.all([
+        Brand.find().exec(),
+        Category.find().exec(),
+      ]);
+
+      for (const category of allCategories) {
+        if (item.category.includes(category._id)) {
+          category.checked = "true";
+        }
+      }
+
+      res.render("item_create_form", {
+        title: "Update Item",
+        brands: allBrands,
+        categories: allCategories,
+        item: item,
+        errors: errors.array(),
+      });
+      return;
+    } else {
+      const updatedItem = await Item.findByIdAndUpdate(req.params.id, item, {});
+      res.redirect(updatedItem.url);
+    }
+  }),
+];
 
 // Display item detail
 exports.itemDetail = asyncHandler(async (req, res, next) => {
