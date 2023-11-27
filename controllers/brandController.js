@@ -1,9 +1,22 @@
 const asyncHandler = require("express-async-handler");
-
+const multer = require("multer");
 const Brand = require("../models/brand");
 const Item = require("../models/item");
 
 const { body, validationResult } = require("express-validator");
+
+// Setup multer storage for file upload
+
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, "public/images/");
+  },
+  filename: function (req, file, cb) {
+    cb(null, Date.now() + "-" + file.originalname);
+  },
+});
+
+const upload = multer({ storage: storage });
 
 // GET request for create Brand form
 exports.createBrandForm = asyncHandler(async (req, res, next) => {
@@ -12,6 +25,8 @@ exports.createBrandForm = asyncHandler(async (req, res, next) => {
 
 // POST request for create Brand form
 exports.sendCreateBrandForm = [
+  upload.single("brand_image"),
+
   body("brand_name")
     .trim()
     .isLength({ min: 1 })
@@ -29,6 +44,7 @@ exports.sendCreateBrandForm = [
     const brand = new Brand({
       name: req.body.brand_name,
       desc: req.body.brand_desc,
+      image: req.file ? req.file.filename : null,
     });
 
     if (!errors.isEmpty()) {
@@ -89,6 +105,8 @@ exports.updateBrandForm = asyncHandler(async (req, res, next) => {
 
 // POST request for update Brand form
 exports.sendUpdateBrandForm = [
+  upload.single("brand_image"),
+
   body("brand_name")
     .trim()
     .isLength({ min: 1 })
@@ -107,6 +125,7 @@ exports.sendUpdateBrandForm = [
       name: req.body.brand_name,
       desc: req.body.brand_desc,
       _id: req.params.id,
+      image: req.file ? req.file.filename : null,
     });
 
     if (!errors.isEmpty()) {
@@ -138,7 +157,7 @@ exports.brandDetail = asyncHandler(async (req, res, next) => {
     err.status = 404;
     return next(err);
   }
-
+  console.log(brandData.brandImage);
   res.render("brand_detail", {
     title: brandData.name,
     brand: brandData,
